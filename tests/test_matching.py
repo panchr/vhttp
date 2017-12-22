@@ -6,7 +6,7 @@
 
 import unittest
 
-from mitm.rewrite_payload import is_target
+from mitm.rewrite_payload import is_target_url
 
 class TestIsTarget(unittest.TestCase):
   # Base URLs that match the pattern
@@ -42,8 +42,8 @@ class TestIsTarget(unittest.TestCase):
 
   def test_matching(self):
     for url in self.matching_urls:
-      self.assertTrue(is_target(url), url)
+      self.assertTrue(is_target_url(url), url)
 
   def test_not_matching(self):
     for url in self.non_matching_urls:
-      self.assertFalse(is_target(url), url)
+      self.assertFalse(is_target_url(url), url)
