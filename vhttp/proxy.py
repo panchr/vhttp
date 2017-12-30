@@ -33,6 +33,7 @@ async def proxy_request(
     version=request.version,
     read_timeout=120,
     conn_timeout=60,
+    auto_decompress=True,
     skip_auto_headers=frozenset({'User-Agent'}))
 
   # No proxies defined, so forward the request as normal. No vantage-points.
@@ -40,13 +41,25 @@ async def proxy_request(
     response = await perform_client_request(session, request)
     return await make_response(response)
 
-  resp_futures = [
+  response_contexts = await asyncio.gather(*[
     asyncio.ensure_future(perform_client_request(session, request, proxy))
     for proxy in vantage_points
-  ]
-  responses = await asyncio.gather(*resp_futures)
-  assumed_correct = await make_response(responses[0])
-  return assumed_correct
+  ])
+  responses = await asyncio.gather(*[
+    asyncio.ensure_future(make_response(resp))
+    for resp in response_contexts
+    ], return_exceptions=True)
+
+  # Ignore failed responses
+  successful_responses = list(filter(
+    lambda r: isinstance(r, aiohttp.web.Response),
+    responses))
+
+  if len(successful_responses):
+    return successful_responses[0]
+  # TODO: need a failed response
+  else:
+    raise ValueError()
 
 async def perform_client_request(
     session: aiohttp.ClientSession,
@@ -83,14 +96,25 @@ async def make_response(
     ) -> aiohttp.web.Response:
   '''
   Turn a response context into a response.
+
+  :param response_ctx: context with which the request was performed
   '''
 
   async with response_ctx as response:
     data = await response.read()
+    headers = dict(response.headers)
+
+    # aiohttp automatically decompresses gzip and deflate
+    if headers['Content-Encoding'] in frozenset({'gzip', 'deflate'}):
+      # Identity encoding indicates no compression, because the data is already
+      # decompressed.
+      headers['Content-Encoding'] = 'identity'
+      # Content-Length also has to be manually set, because 
+      headers['Content-Length'] = str(len(data))
 
     resp = aiohttp.web.Response(
       status=response.status,
       body=data,
-      headers=response.headers)
+      headers=headers)
 
     return resp
