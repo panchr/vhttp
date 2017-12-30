@@ -38,17 +38,20 @@ async def proxy_request(
 
   # No proxies defined, so forward the request as normal. No vantage-points.
   if vantage_points is None or not len(vantage_points):
-    response = await perform_client_request(session, request)
-    return await make_response(response)
+    resp_future = asyncio.ensure_future(
+      perform_client_request(session, request))
+    try:
+      await resp_future
+      return resp_future.result()
+    except Exception as e:
+      return aiohttp.web.Response(status=404, text='Request failed.')
+    finally:
+      session.close()
 
-  response_contexts = await asyncio.gather(*[
+  responses = await asyncio.gather(*[
     asyncio.ensure_future(perform_client_request(session, request, proxy))
     for proxy in vantage_points
-  ])
-  responses = await asyncio.gather(*[
-    asyncio.ensure_future(make_response(resp))
-    for resp in response_contexts
-    ], return_exceptions=True)
+  ], return_exceptions=True)
 
   # Ignore failed responses
   successful_responses = list(filter(
@@ -56,16 +59,16 @@ async def proxy_request(
     responses))
 
   if len(successful_responses):
+    # TODO: check quorum, return 409 otherwise
     return successful_responses[0]
-  # TODO: need a failed response
   else:
-    raise ValueError()
+    return aiohttp.web.Response(status=404, text='No proxies succeeded.')
 
 async def perform_client_request(
     session: aiohttp.ClientSession,
     request: aiohttp.web.Request,
     proxy: typing.Optional[str] = None
-    ) -> aiohttp.ClientResponse:
+    ) -> aiohttp.web.Response:
   '''
   Perform a client request.
   
@@ -74,47 +77,58 @@ async def perform_client_request(
   :param proxy: proxy to use, if any
   '''
   http_kwargs = {}
-  http_headers = {}
+
+  headers = dict(request.headers)
+  headers['Content-Type'] = request.content_type
 
   if request.can_read_body:
     http_kwargs['body'] = await request.read()
+    handle_aiohttp_decompression(http_kwargs['body'], headers)
 
-  http_headers = dict(request.headers)
-  http_headers['Content-Type'] = request.content_type
-
-  return session.request(
-    request.method,
-    request.url,
-    headers=http_headers,
-    params=request.query,
-    proxy=proxy,
-    **http_kwargs)
+  async with session.request(
+      request.method,
+      request.url,
+      headers=headers,
+      params=request.query,
+      proxy=proxy,
+      **http_kwargs) as response:
+    return await make_response(response)
 
 async def make_response(
-    # TODO: this type is wrong, should be a context manager
-    response_ctx: aiohttp.ClientResponse
+    response: aiohttp.ClientResponse,
     ) -> aiohttp.web.Response:
   '''
-  Turn a response context into a response.
+  Turn a ClientResponse into a server response.
 
-  :param response_ctx: context with which the request was performed
+  :param response: response from the aiohttp client
   '''
+  data = await response.read()
+  headers = dict(response.headers)
+  handle_aiohttp_decompression(data, headers)
 
-  async with response_ctx as response:
-    data = await response.read()
-    headers = dict(response.headers)
+  return aiohttp.web.Response(
+    status=response.status,
+    body=data,
+    headers=headers)
 
-    # aiohttp automatically decompresses gzip and deflate
-    if headers['Content-Encoding'] in frozenset({'gzip', 'deflate'}):
-      # Identity encoding indicates no compression, because the data is already
-      # decompressed.
-      headers['Content-Encoding'] = 'identity'
-      # Content-Length also has to be manually set, because 
-      headers['Content-Length'] = str(len(data))
+def handle_aiohttp_decompression(data: bytes, headers: dict) -> None:
+  '''
+  Handle aiohttp's automatic decompression. Disabling auto decompression
+  results in inaccurate decompression on the client side. So, we keep
+  automatic decompression enabled and modify the headers appropriately to
+  reflect the decompressed content.
 
-    resp = aiohttp.web.Response(
-      status=response.status,
-      body=data,
-      headers=headers)
+  :param data: request data
+  :param headers: request headers
+  '''
+  if not 'Content-Encoding' in headers:
+    return
 
-    return resp
+  # aiohttp automatically decompresses gzip and deflate
+  if headers['Content-Encoding'] in frozenset({'gzip', 'deflate'}):
+    # 'identity' encoding indicates no compression, which signals to the client
+    # that no additional decompression is required.
+    headers['Content-Encoding'] = 'identity'
+    # Content-Length also has to be manually set, because the data is of a
+    # different length after being processed.
+    headers['Content-Length'] = str(len(data))
