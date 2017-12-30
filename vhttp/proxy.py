@@ -40,7 +40,7 @@ async def proxy_request(
   '''
   async with aiohttp.ClientSession(
       version=request.version,
-      read_timeout=120,
+      read_timeout=300,
       conn_timeout=60,
       auto_decompress=True,
       skip_auto_headers=frozenset({'User-Agent'})) as session:
@@ -65,7 +65,6 @@ async def distribute_request(
 
   :return: response from distributed request
   '''
-
   # No proxies defined, so forward the request as normal. No vantage-points.
   if vantage_points is None or not len(vantage_points):
     resp_future = asyncio.ensure_future(
