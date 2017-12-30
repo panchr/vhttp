@@ -37,11 +37,10 @@ Run vHTTP:
 
 We use the following HTTP proxies, which were available at the time of writing:
 
-- 128.68.150.9:53281, in Russia
-- 92.42.109.46:1080, in Germany
-- 217.61.15.26:3128, in Italy
-- 173.255.197.30:3128, in Dallas (United States)
-- 162.216.152.53:8080, in Jacksonville (United States)
+- http://128.68.150.9:53281, in Russia
+- http://217.61.15.26:3128, in Italy
+- http://88.99.151.121:3128, in Germany
+- http://173.255.197.30:3128, in Dallas (United States)
 
 We are requesting a simple install script, as such:
 
@@ -80,7 +79,7 @@ Here, we don't get the actual script because of the malicious proxy. Now, we
 add on the additional proxies:
 
 ```bash
-λ export VHTTP_PROXIES=http://localhost:8081,128.68.150.9:53281,92.42.109.46:1080,217.61.15.26:3128,173.255.197.30:3128,162.216.152.53:8080
+λ export VHTTP_PROXIES=http://localhost:8081,http://128.68.150.9:53281,http://217.61.15.26:3128,http://173.255.197.30:3128,http://88.99.151.121:3128
 λ python vhttp/server.py
 ```
 

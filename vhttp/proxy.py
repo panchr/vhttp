@@ -87,6 +87,10 @@ async def distribute_request(
     lambda r: isinstance(r, aiohttp.web.Response),
     responses))
 
+  num_failed = len(responses) - len(successful_responses)
+  if num_failed > 0:
+    _log.warning("%d proxies failed for %s." % (num_failed, request.url))
+
   if len(successful_responses):
     consensus = vantage.check_consensus(successful_responses, threshold)
     if consensus is None:
