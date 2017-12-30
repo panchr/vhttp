@@ -2,7 +2,8 @@
 # vhttp
 # Author: Rushy Panchal
 # Date: December 29th, 2017
-# Description: SOCKS5 proxy for HTTP.
+# Description: HTTP Proxy server that utilizes vantage points for consensus
+#              when retrieving static content.
 
 import typing
 import asyncio
@@ -16,6 +17,9 @@ import aiohttp.web
 import vantage
 
 _log = logging.getLogger('vhttp')
+
+# aiohttp automatically decompresses gzip and deflate
+AIOHTTP_DECOMPRESSION_ENCODINGS = frozenset({'gzip', 'deflate'})
 
 async def proxy_request(
     request: aiohttp.web.Request,
@@ -85,12 +89,13 @@ async def distribute_request(
     responses))
 
   if len(successful_responses):
-    consensus = vantange.check_consensus(successful_responses)
+    consensus = vantage.check_consensus(successful_responses, threshold)
     if consensus is None:
       return aiohttp.web.Response(status=409, text="Consensus not achieved.")
 
     return consensus
   else:
+    _log.warning('All proxies failed for %s.' % request.url)
     return aiohttp.web.Response(status=404, text='No proxies succeeded.')
 
 async def perform_client_request(
@@ -157,8 +162,7 @@ def handle_aiohttp_decompression(data: bytes, headers: dict) -> None:
   if not 'Content-Encoding' in headers:
     return
 
-  # aiohttp automatically decompresses gzip and deflate
-  if headers['Content-Encoding'] in frozenset({'gzip', 'deflate'}):
+  if headers['Content-Encoding'] in AIOHTTP_DECOMPRESSION_ENCODINGS:
     # 'identity' encoding indicates no compression, which signals to the client
     # that no additional decompression is required.
     headers['Content-Encoding'] = 'identity'
