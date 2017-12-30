@@ -51,6 +51,8 @@ def get_proxy_server():
 
   proxy_server = aiohttp.web.Server(handler)
   loop = asyncio.get_event_loop()
+
+  _log.info("Running proxy on: %s:%d." % (proxy_host, proxy_port))
   return loop.create_server(proxy_server, proxy_host, proxy_port)
 
 if __name__ == '__main__':

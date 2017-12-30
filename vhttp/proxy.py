@@ -120,6 +120,9 @@ async def perform_client_request(
     http_kwargs['body'] = await request.read()
     handle_aiohttp_decompression(http_kwargs['body'], headers)
 
+  if 'Connection' in headers:
+    headers['Connection'] = 'close'
+
   async with session.request(
       request.method,
       request.url,
@@ -143,6 +146,11 @@ async def make_response(
   headers = dict(response.headers)
   handle_aiohttp_decompression(data, headers)
 
+  if 'Transfer-Encoding' in headers:
+    del headers['Transfer-Encoding']
+  if 'Connection' in headers:
+    headers['Connection'] = 'close'
+
   return aiohttp.web.Response(
     status=response.status,
     body=data,
@@ -165,6 +173,7 @@ def handle_aiohttp_decompression(data: bytes, headers: dict) -> None:
     # 'identity' encoding indicates no compression, which signals to the client
     # that no additional decompression is required.
     headers['Content-Encoding'] = 'identity'
+
     # Content-Length also has to be manually set, because the data is of a
     # different length after being processed.
     headers['Content-Length'] = str(len(data))
