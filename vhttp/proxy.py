@@ -29,12 +29,30 @@ async def proxy_request(
   :param vantange_points: list of proxies to use as vantage points
   :param quorum: percentage of vantage points required to pass
   '''
-  session = aiohttp.ClientSession(
-    version=request.version,
-    read_timeout=120,
-    conn_timeout=60,
-    auto_decompress=True,
-    skip_auto_headers=frozenset({'User-Agent'}))
+  async with aiohttp.ClientSession(
+      version=request.version,
+      read_timeout=120,
+      conn_timeout=60,
+      auto_decompress=True,
+      skip_auto_headers=frozenset({'User-Agent'})) as session:
+    return await distribute_request(session, request, vantage_points, quorum)
+
+async def distribute_request(
+    session: aiohttp.ClientSession,
+    request: aiohttp.web.Request,
+    vantage_points: typing.Optional[typing.List[str]] = None,
+    quorum: typing.Optional[decimal.Decimal] = None,
+    ) -> aiohttp.web.Response:
+  '''
+  Distribute requests across a series of vantage points and check for a quorum
+  of agreement in their data. If no such quorum is met, then a failure response
+  is sent.
+
+  :param session: session to send requests with
+  :param request: request to proxy
+  :param vantange_points: list of proxies to use as vantage points
+  :param quorum: percentage of vantage points required to pass
+  '''
 
   # No proxies defined, so forward the request as normal. No vantage-points.
   if vantage_points is None or not len(vantage_points):
@@ -45,8 +63,6 @@ async def proxy_request(
       return resp_future.result()
     except Exception as e:
       return aiohttp.web.Response(status=404, text='Request failed.')
-    finally:
-      session.close()
 
   responses = await asyncio.gather(*[
     asyncio.ensure_future(perform_client_request(session, request, proxy))
