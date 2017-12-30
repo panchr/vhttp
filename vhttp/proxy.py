@@ -13,6 +13,8 @@ import functools
 import aiohttp
 import aiohttp.web
 
+import vantage
+
 _log = logging.getLogger('vhttp')
 
 async def proxy_request(
@@ -29,6 +31,8 @@ async def proxy_request(
   :param vantange_points: list of proxies to use as vantage points
   :param threshold: fraction of vantage points required to have matching
                     content
+
+  :return: proxy response
   '''
   async with aiohttp.ClientSession(
       version=request.version,
@@ -54,6 +58,8 @@ async def distribute_request(
   :param request: request to proxy
   :param vantange_points: list of proxies to use as vantage points
   :param threshold: percentage of vantage points required to pass
+
+  :return: response from distributed request
   '''
 
   # No proxies defined, so forward the request as normal. No vantage-points.
@@ -65,6 +71,8 @@ async def distribute_request(
       return resp_future.result()
     except Exception as e:
       return aiohttp.web.Response(status=404, text='Request failed.')
+  elif threshold is None:
+    raise ValueError('threshold must be set if vantage_points is set.')
 
   responses = await asyncio.gather(*[
     asyncio.ensure_future(perform_client_request(session, request, proxy))
@@ -77,8 +85,11 @@ async def distribute_request(
     responses))
 
   if len(successful_responses):
-    # TODO: check threshold, return 409 otherwise
-    return successful_responses[0]
+    consensus = vantange.check_consensus(successful_responses)
+    if consensus is None:
+      return aiohttp.web.Response(status=409, text="Consensus not achieved.")
+
+    return consensus
   else:
     return aiohttp.web.Response(status=404, text='No proxies succeeded.')
 
@@ -93,6 +104,8 @@ async def perform_client_request(
   :param session: session to perform requests with
   :param request: request to perform
   :param proxy: proxy to use, if any
+
+  :return: response from client
   '''
   http_kwargs = {}
 
@@ -119,6 +132,8 @@ async def make_response(
   Turn a ClientResponse into a server response.
 
   :param response: response from the aiohttp client
+
+  :return: server response based on client data
   '''
   data = await response.read()
   headers = dict(response.headers)
