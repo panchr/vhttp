@@ -59,14 +59,18 @@ def check_consensus(
     hashes[resp_hash] = r
 
   max_consensus = 0
+  max_hash = None
+
   for h, f in frequencies.items():
-    # A response passed the consensus check, so it can be returned to the user.
     consensus = f / total_responses
-    if consensus >= threshold:
-      _log.info('Consensus Achieved (%f) with hash %s.' % (consensus, h))
-      return hashes[h]
-    elif consensus >= max_consensus:
+    if consensus >= max_consensus:
       max_consensus = consensus
+      max_hash = h
+
+  if max_consensus >= threshold:
+    _log.info(
+      'Consensus Achieved (%f) with hash %s.' % (max_consensus, max_hash))
+    return hashes[max_hash]
 
   _log.info('No consensus achieved. Maximum reached: %f.' % max_consensus)
   return None
@@ -86,10 +90,7 @@ def hash_response(r: aiohttp.web.Response) -> str:
 
   for header, value in r.headers.items():
     if header in HASHED_HEADERS:
-      print('Hashing header: %s=%s.' % (header, value))
       resp_hash.update(header.encode('utf8'))
       resp_hash.update(value.encode('utf8'))
-
-  print('-' * 25)
 
   return resp_hash.hexdigest()
