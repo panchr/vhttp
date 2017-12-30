@@ -18,16 +18,17 @@ _log = logging.getLogger('vhttp')
 async def proxy_request(
     request: aiohttp.web.Request,
     vantage_points: typing.Optional[typing.List[str]] = None,
-    quorum: typing.Optional[decimal.Decimal] = None,
+    threshold: typing.Optional[decimal.Decimal] = None,
     ) -> aiohttp.web.Response:
   '''
   Proxy a request to the destination, potentially through vantage points.
-  If vantage points are defined, a quorum of them must have equivalent content.
-  Otherwise, the response is rejected and an error is returned.
+  If vantage points are defined, a threshold of them must have equivalent
+  content. Otherwise, the response is rejected and an error is returned.
 
   :param request: request to proxy
   :param vantange_points: list of proxies to use as vantage points
-  :param quorum: percentage of vantage points required to pass
+  :param threshold: fraction of vantage points required to have matching
+                    content
   '''
   async with aiohttp.ClientSession(
       version=request.version,
@@ -35,23 +36,24 @@ async def proxy_request(
       conn_timeout=60,
       auto_decompress=True,
       skip_auto_headers=frozenset({'User-Agent'})) as session:
-    return await distribute_request(session, request, vantage_points, quorum)
-
+    r = distribute_request(session, request, vantage_points, threshold)
+    return await r
+ 
 async def distribute_request(
     session: aiohttp.ClientSession,
     request: aiohttp.web.Request,
     vantage_points: typing.Optional[typing.List[str]] = None,
-    quorum: typing.Optional[decimal.Decimal] = None,
+    threshold: typing.Optional[decimal.Decimal] = None,
     ) -> aiohttp.web.Response:
   '''
-  Distribute requests across a series of vantage points and check for a quorum
-  of agreement in their data. If no such quorum is met, then a failure response
-  is sent.
+  Distribute requests across a series of vantage points and check for a
+  threshold of agreement in their data. If no such threshold is met, then a
+  failure response is sent.
 
   :param session: session to send requests with
   :param request: request to proxy
   :param vantange_points: list of proxies to use as vantage points
-  :param quorum: percentage of vantage points required to pass
+  :param threshold: percentage of vantage points required to pass
   '''
 
   # No proxies defined, so forward the request as normal. No vantage-points.
@@ -75,7 +77,7 @@ async def distribute_request(
     responses))
 
   if len(successful_responses):
-    # TODO: check quorum, return 409 otherwise
+    # TODO: check threshold, return 409 otherwise
     return successful_responses[0]
   else:
     return aiohttp.web.Response(status=404, text='No proxies succeeded.')

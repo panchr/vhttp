@@ -27,7 +27,7 @@ def get_proxy_server():
   proxy_host = os.getenv('VHTTP_PROXY_HOST', 'localhost')
   proxy_port = int(os.getenv('VHTTP_PROXY_PORT', '7777'))
   proxies = frozenset(filter(str, os.getenv('VHTTP_PROXIES', '').split(',')))
-  required_quorum = decimal.Decimal(os.getenv('VHTTP_QUORUM', '0.5'))
+  threshold = decimal.Decimal(os.getenv('VHTTP_THRESHOLD', '0.5'))
 
   if len(proxies):
     _log.info("Vantage Points: %s.", ','.join(proxies))
@@ -39,7 +39,7 @@ def get_proxy_server():
   handler = functools.partial(
     proxy.proxy_request,
     vantage_points=proxies,
-    quorum=required_quorum)
+    threshold=threshold)
 
   proxy_server = aiohttp.web.Server(handler)
   loop = asyncio.get_event_loop()
