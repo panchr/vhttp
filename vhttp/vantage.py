@@ -50,29 +50,24 @@ def check_consensus(
   :return: response that has consensus, if any
   '''
   total_responses = decimal.Decimal(len(responses))
-  hashes = {}
   frequencies = collections.defaultdict(lambda: 0)
+
+  max_frequency = 0
+  possible_resp = None
 
   for r in responses:
     resp_hash = hash_response(r)
     frequencies[resp_hash] += 1
-    hashes[resp_hash] = r
 
-  max_consensus = 0
-  max_hash = None
+    if frequencies[resp_hash] >= max_frequency:
+      max_frequency = frequencies[resp_hash]
+      possible_resp = r
 
-  for h, f in frequencies.items():
-    consensus = f / total_responses
-    if consensus >= max_consensus:
-      max_consensus = consensus
-      max_hash = h
+  max_agreement = max_frequency / total_responses
+  if max_agreement >= threshold:
+    _log.info('Consensus Achieved (%f).' % max_agreement)
+    return possible_resp
 
-  if max_consensus >= threshold:
-    _log.info(
-      'Consensus Achieved (%f) with hash %s.' % (max_consensus, max_hash))
-    return hashes[max_hash]
-
-  _log.info('No consensus achieved. Maximum reached: %f.' % max_consensus)
   return None
 
 def hash_response(r: aiohttp.web.Response) -> str:
@@ -84,6 +79,9 @@ def hash_response(r: aiohttp.web.Response) -> str:
 
   :return: hash of response
   '''
+  if not isinstance(r, aiohttp.web.Response):
+    return None
+
   resp_hash = hashlib.sha256()
   resp_hash.update('{:03d}'.format(r.status).encode('utf8'))
   resp_hash.update(r.body)

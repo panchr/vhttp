@@ -32,7 +32,7 @@ async def proxy_request(
   content. Otherwise, the response is rejected and an error is returned.
 
   :param request: request to proxy
-  :param vantange_points: list of proxies to use as vantage points
+  :param vantage_points: list of proxies to use as vantage points
   :param threshold: fraction of vantage points required to have matching
                     content
 
@@ -60,7 +60,7 @@ async def distribute_request(
 
   :param session: session to send requests with
   :param request: request to proxy
-  :param vantange_points: list of proxies to use as vantage points
+  :param vantage_points: list of proxies to use as vantage points
   :param threshold: percentage of vantage points required to pass
 
   :return: response from distributed request
@@ -82,17 +82,16 @@ async def distribute_request(
     for proxy in vantage_points
   ], return_exceptions=True)
 
-  # Ignore failed responses
-  successful_responses = list(filter(
-    lambda r: isinstance(r, aiohttp.web.Response),
-    responses))
+  # Count failed responses.
+  num_failed = len(list(filter(
+    lambda r: not isinstance(r, aiohttp.web.Response),
+    responses)))
 
-  num_failed = len(responses) - len(successful_responses)
   if num_failed > 0:
     _log.warning("%d proxies failed for %s." % (num_failed, request.url))
 
-  if len(successful_responses):
-    consensus = vantage.check_consensus(successful_responses, threshold)
+  if len(responses) > num_failed:
+    consensus = vantage.check_consensus(responses, threshold)
     if consensus is None:
       return aiohttp.web.Response(status=409, text="Consensus not achieved.")
 

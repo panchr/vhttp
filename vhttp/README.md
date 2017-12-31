@@ -25,6 +25,8 @@ vHTTP requires Python 3.5 or greater. Install dependencies with
 ```bash
 λ cd vhttp
 λ pipenv install
+λ pipenv shell
+λ cd ..
 ```
 
 Run vHTTP:
