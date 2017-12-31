@@ -1,11 +1,10 @@
-
 PAPER=vhttp
 BIBTEX := bibtex
 TGIF   := tgif
 XFIG   := xfig
 GNUPLOT:= gnuplot
 
-SOURCES=vhttp.tex \
+SOURCES:=vhttp.tex \
 	abstract.tex \
 	intro.tex \
 	design.tex \
@@ -14,9 +13,11 @@ SOURCES=vhttp.tex \
 	conclusion.tex \
 	references.bib
 
+FIGURES:=$(wildcard figures/*.pdf figures/*.png figures/*.tex)
+
 all: $(PAPER).pdf
 
-$(PAPER).pdf: $(SOURCES)
+$(PAPER).pdf: $(SOURCES) $(FIGURES)
 	pdflatex $(PAPER)
 	bibtex $(PAPER)
 	pdflatex $(PAPER)

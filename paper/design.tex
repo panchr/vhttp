@@ -40,41 +40,32 @@ geographically-diverse vantage points, without the user having to set these up,
 by using existing HTTP proxies. The user provides a list of proxies to use and
 vHTTP performs the user's request through all of the provided proxies, as shown
 in Figure \ref{fig:proxy-data-flow}. There are many free HTTP proxies around
-the world, and so finding such a list is not difficult.
+the world, and so finding such a list is not difficult. We refer to vantage
+points and HTTP proxies interchangeably in this paper, as they are synonymous
+for our purposes. Although we desire that vantage points have this feature of
+geographic diversity, vHTTP cannot easily enforce that and does not attempt to.
+Instead, we hope that users will use vantage points that do share this feature
+so that they can obtain a greater confidence in the shared response.
 
-\begin{figure}[b]
-  \centering
-
-  \begin{tikzpicture}[node distance = 2cm, auto]
-    \node [block] (client) {Client};
-    \node [block, right of=client] (vhttp) {vHTTP};
-    \node [block, right of=vhttp] (http-proxy) {HTTP Proxy};
-
-    \draw[->, to path={-- (\tikztotarget)}]
-      (client) edge (vhttp)
-      (vhttp) edge (client)
-      (vhttp) edge (http-proxy)
-      (http-proxy) edge (vhttp);
-
-  \end{tikzpicture}
-
-  \caption{Flow of data in vHTTP.}
-  \label{fig:proxy-data-flow}
-\end{figure}
+\input{figures/proxy-data-flow}
 
 \subsection{Response Consensus}
 
-Each request routed through another HTTP proxy is stored until all of the
-proxies have either responded or failed. Then, the $N$ responses are checked
-for a \textit{consensus}. Consensus occurs when at least a user-specified
-threshold, $T$, of the responses agree. Responses $R_i$ and $R_j$ agree if
-$H(R_i) = H(R_j)$ where $H$ is a hash function of our choosing. This agreement
-can be extended to any $n$ responses; that is, responses $R_1, R_2, ..., R_n$
-all agree if $H(R_i) = H(R_j) \forall i, j \in \{1...n\}$.
+Each request routed through a vantange point is stored until all of the
+vantage points have either responded or failed. Then, the $N$ responses are
+checked for a \textit{consensus}. Consensus occurs when at least a
+user-specified threshold, $T$, of the responses agree. Responses $R_i$ and
+$R_j$ agree if $H(R_i) = H(R_j)$ where $H$ is a hash function of our choosing.
+This agreement can be extended to any $n$ responses; that is, responses
+$R_1, R_2, ..., R_n$ all agree if $H(R_i) = H(R_j) \forall i, j \in \{1...n\}$.
 
 Thus, a consensus is reached if a subset $C$, of size at least $T$, of the
 responses can be found such that all of the responses in $C$ are in agreement.
-We call the subset $C$ that has consensus a \textit{consensus set}.
+We call the subset $C$ that has consensus a \textit{consensus set}. Note that
+because the user chooses $T$, they can vary $T$ depending on how strict of a
+guarantee they want on the response. Practically, the threshold is inputted as
+a fraction of $N$; setting it to 0 provides no added security and setting it
+to 1 requires all vantage points to agree. 
 
 We choose the hash function $H$ based on this one key property: $H(R)$ for a
 response $R$ should be representative of the \emph{content} in $R$. Because
@@ -95,7 +86,8 @@ content. In addition, the \texttt{Host} header is included because it is
 unlikely to vary across requests. This is all run through the standard $sha256$
 hash function so that $H$ maintains common properties of good hash functions
 (different values have different hashes, equivalent values have the same hash,
-collision probability is low, and so forth).
+collision probability is low, and so forth). If $R$ is a response that failed
+or did not complete, $H(R) = \texttt{null}$.
 
 From this, we get the property that all consensus sets are necessarily
 disjoint. A response $R$ has a single hash value and so it belongs to a single
@@ -109,3 +101,24 @@ encountered and a response with a hash associated with that maximum frequency.
 If the maximum frequency exceeds $T$ after going through all of the responses,
 we return the response associated with that freqency. Note that this works
 because we can choose any response in $C$ as a representative response.
+If no consensus can be found or if the most frequent hash is \texttt{null}
+(that is, failed responses), then an error response is returned to the user.
+
+\input{figures/vhttp-consensus-flow}
+
+\subsection{Implementation}
+
+vHTTP is implemented in Python using \texttt{asyncio} and \texttt{aiohttp}.
+We use \texttt{aiohttp} because it provides nice abstractions for working with
+HTTP. More importantly, \texttt{aiohttp} allows for asynchronous request
+handling and proxying, which means vHTTP can make use of the concurrency
+opportunities available with network operations. In a synchronous mode, a
+proxy that forwards each request to $N$ proxies would be terribly slow, as it
+would take the combined time of each proxy's response to actually respond to
+the original client. With asynchronous handling, a request to each proxy is
+sent immediately and then all of the responses are gathered and checked for
+consensus. Through this manner, the total time taken to acquire the proxy
+responses is that of the slowest response, not the combined total.
+
+Similarly, multiple simultaneous requests to vHTTP can be efficiently handled
+because whenever the server is waiting for the vantage points to respond, 

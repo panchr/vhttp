@@ -1,0 +1,20 @@
+\begin{figure}[b]
+  \centering
+
+  \begin{tikzpicture}[node distance = 2cm, auto]
+    \tikzset{every node}=[font=\small\sffamily]
+    \node [block] (client) {Client};
+    \node [block, right of=client] (vhttp) {vHTTP};
+    \node [block, right of=vhttp] (http-proxy) {HTTP Proxy};
+
+    \draw[->, to path={-- (\tikztotarget)}]
+      (client) edge (vhttp)
+      (vhttp) edge (client)
+      (vhttp) edge (http-proxy)
+      (http-proxy) edge (vhttp);
+
+  \end{tikzpicture}
+
+  \caption{Flow of data in vHTTP for a single proxy.}
+  \label{fig:proxy-data-flow}
+\end{figure}
