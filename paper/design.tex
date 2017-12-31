@@ -47,8 +47,8 @@ the world, and so finding such a list is not difficult.
 
   \begin{tikzpicture}[node distance = 2cm, auto]
     \node [block] (client) {Client};
-    \node [block, left of=client] (vhttp) {vHTTP};
-    \node [block, left of=vhttp] (http-proxy) {HTTP Proxy};
+    \node [block, right of=client] (vhttp) {vHTTP};
+    \node [block, right of=vhttp] (http-proxy) {HTTP Proxy};
 
     \draw[->, to path={-- (\tikztotarget)}]
       (client) edge (vhttp)
@@ -62,10 +62,50 @@ the world, and so finding such a list is not difficult.
   \label{fig:proxy-data-flow}
 \end{figure}
 
-\subsection{Consensus}
+\subsection{Response Consensus}
 
 Each request routed through another HTTP proxy is stored until all of the
-proxies have either responded or failed. Then, the $N$ successful responses are
-checked for a \textit{consensus}. Consensus occurs when at least a
-user-specified threshold, $T$, of the responses agree. Responses $R_i$ and
-$R_j$ agree if $H(R_i) = H(R_j)$ where $H$ is a hash function of our choosing.
+proxies have either responded or failed. Then, the $N$ responses are checked
+for a \textit{consensus}. Consensus occurs when at least a user-specified
+threshold, $T$, of the responses agree. Responses $R_i$ and $R_j$ agree if
+$H(R_i) = H(R_j)$ where $H$ is a hash function of our choosing. This agreement
+can be extended to any $n$ responses; that is, responses $R_1, R_2, ..., R_n$
+all agree if $H(R_i) = H(R_j) \forall i, j \in \{1...n\}$.
+
+Thus, a consensus is reached if a subset $C$, of size at least $T$, of the
+responses can be found such that all of the responses in $C$ are in agreement.
+We call the subset $C$ that has consensus a \textit{consensus set}.
+
+We choose the hash function $H$ based on this one key property: $H(R)$ for a
+response $R$ should be representative of the \emph{content} in $R$. Because
+vHTTP is concerned with the finding the accurate content for a request, the
+basis for consensus should take the content of each response into account.
+$H$ is thus defined as
+
+\begin{align*}
+  H(R) = sha256(R.status + R.body + R.headers)
+\end{align*}
+
+where $+$ is the concatenation operator. $R.status$ is the HTTP status code of
+$R$, $R.body$ is the body of $R$, and $R.headers$ is a string representation
+of certain HTTP headers and their values. The headers used by default are
+\texttt{Content-Type}, \texttt{Content-Language}, and \texttt{ETag}. These
+headers are included in $H(R)$ because they are directly related to the
+content. In addition, the \texttt{Host} header is included because it is
+unlikely to vary across requests. This is all run through the standard $sha256$
+hash function so that $H$ maintains common properties of good hash functions
+(different values have different hashes, equivalent values have the same hash,
+collision probability is low, and so forth).
+
+From this, we get the property that all consensus sets are necessarily
+disjoint. A response $R$ has a single hash value and so it belongs to a single
+consensus set; $C$ with a member $R$ is composed of all responses that hash to
+$H(R)$. As a consequence, any response $R \in C$ is representative of $C$.
+
+To efficiently calculate a consensus, we rely on the property that the possible
+consensus sets are disjoint. While iterating through the responses, we
+keep track of the frequency of each hash, along with the maximum frequency
+encountered and a response with a hash associated with that maximum frequency.
+If the maximum frequency exceeds $T$ after going through all of the responses,
+we return the response associated with that freqency. Note that this works
+because we can choose any response in $C$ as a representative response.
