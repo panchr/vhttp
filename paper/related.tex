@@ -1,3 +1,37 @@
 \section{Related Work}
 \label{sec:related}
 
+Vantage point-based systems have been designed in the past and have influenced
+the design of vHTTP. One such system is Perspectives, which uses a system of
+notary servers that track the public keys of network services
+\cite{Perspectives}. Clients presented with an untrusted public key for a
+service can query different notary servers and based on those servers'
+perspective of what the key should be, accept or reject the key. This is
+similar to vHTTP in that the vHTTP proxy will forward the client's request to
+different proxies and determine if consensus exists among those proxies.
+
+However, vHTTP differs from Perspectives in that it focuses on HTTP and not
+SSH keys, which results in dealing with different data. vHTTP must determine
+consensus not based on the entire response, but rather, on a subset of the
+response that is related to the response's content. Perspectives, on the other
+hand, can simply base consensus off of the entirety of the public key. In
+addition, vHTTP does not require new external infrastructure. vHTTP operates
+with existing HTTP proxies as vantage points; setting up so-called notary
+servers is not needed. Thus, vHTTP can be used by clients without additional
+support, whereas Perspectives requires additional infrastructure to be setup
+first.
+
+Another similar system is DoubleCheck, which performs the same task as
+Perspectives – validating public keys or self-signed certificates when
+connecting to servers over SSH or HTTPS \cite{DoubleCheck}. However, it does
+so using Tor, the distributed and anonymous routing protocol and network. This
+is more robust than Perspectives because it utilizes existing infrastructure
+and more importantly, relies on an established protocol. However, DoubleCheck
+relies on a single Tor exit node as a vantage point. vHTTP has the advantage of
+running the request across multiple vantage points concurrently by default.
+
+We note that neither Perspectives nor DoubleCheck is oriented towards HTTP. In
+addition, they face the same problem that vHTTP does: if all of the vantage
+points are compromised \emph{or} if the destination server is compromised, the
+vantage points cannot help in verifying the authenticity and integrity of the
+content it hand.
