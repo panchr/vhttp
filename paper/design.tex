@@ -1,6 +1,71 @@
 \section{Design}
 \label{sec:design}
 
+vHTTP is implemented as an HTTP proxy that can be run locally by security-aware
+people. Users can configure their clients (such as \texttt{curl},
+\texttt{wget}, or even Python's \texttt{requests}) to use vHTTP as a HTTP
+proxy. All HTTP requests from this client are then sent to vHTTP instead of
+to the actual domain. vHTTP performs a MITM mitigation technique on behalf of
+the client, and then responds with the appropriate data if the mitigation
+succeeds.
 
+Because vHTTP is written an HTTP proxy, and not an extension to any specific
+client itself, it can be used by a wide-variety of clients. As long as a client
+supports using HTTP proxies, which most do, vHTTP can be used without hassle.
 
+\subsection{Vantage Points}
 
+vHTTP performs MITM mitigation by using \textit{vantage points}. Vantage points
+are different locations from which the request is performed. In other words,
+vantage points provide different perspectives on the result of a request. If
+vantage points are geographically-diverse, or located around the world, then
+performing a MITM on such content is a much more difficult task, as each
+individual vantage point must be compromised.
+
+The entire idea behind vHTTP is to utilize the general property that MITM
+attacks tend to be localized. A malicious agent can use DNS cache poisoning,
+BGP route hijacking, or act as a middle box on a specific route or subset of
+routes to a destination. However, unless performing a massive-scale attack, it
+is infeasible and unlikely that an agent can attack all of the routes to a
+destination. Agents who could feasibly perform a MITM attack on every route to
+a destination are likely targeting important content - at which point the user
+should not be accessing such content over HTTP, anyway. vHTTP is not designed
+to mitigate large-scale attacks but instead, work around localized ones.
+
+vHTTP is designed to be used with minimal overhead by the user. The user should
+be able to start vHTTP, configure their client to use vHTTP as an HTTP proxy,
+and then use their client. They should \emph{not} have to figure out how to set
+up different vantage points across the globe. vHTTP is able to use
+geographically-diverse vantage points, without the user having to set these up,
+by using existing HTTP proxies. The user provides a list of proxies to use and
+vHTTP performs the user's request through all of the provided proxies, as shown
+in Figure \ref{fig:proxy-data-flow}. There are many free HTTP proxies around
+the world, and so finding such a list is not difficult.
+
+\begin{figure}[b]
+  \centering
+
+  \begin{tikzpicture}[node distance = 2cm, auto]
+    \node [block] (client) {Client};
+    \node [block, left of=client] (vhttp) {vHTTP};
+    \node [block, left of=vhttp] (http-proxy) {HTTP Proxy};
+
+    \draw[->, to path={-- (\tikztotarget)}]
+      (client) edge (vhttp)
+      (vhttp) edge (client)
+      (vhttp) edge (http-proxy)
+      (http-proxy) edge (vhttp);
+
+  \end{tikzpicture}
+
+  \caption{Flow of data in vHTTP.}
+  \label{fig:proxy-data-flow}
+\end{figure}
+
+\subsection{Consensus}
+
+Each request routed through another HTTP proxy is stored until all of the
+proxies have either responded or failed. Then, the $N$ successful responses are
+checked for a \textit{consensus}. Consensus occurs when at least a
+user-specified threshold, $T$, of the responses agree. Responses $R_i$ and
+$R_j$ agree if $H(R_i) = H(R_j)$ where $H$ is a hash function of our choosing.

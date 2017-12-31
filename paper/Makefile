@@ -14,8 +14,7 @@ SOURCES=vhttp.tex \
 	conclusion.tex \
 	references.bib
 
-all: $(PAPER).ps
-pdf: all
+all: $(PAPER).pdf
 
 $(PAPER).pdf: $(SOURCES)
 	pdflatex $(PAPER)
@@ -23,17 +22,13 @@ $(PAPER).pdf: $(SOURCES)
 	pdflatex $(PAPER)
 	pdflatex $(PAPER)
 
-	# pdflatex  $(PAPER).tex
-	# -bibtex --min-crossrefs=100    $(PAPER)
-	# pdflatex  $(PAPER).tex
+# color: $(PAPER).pdf
+# 	pdflatex $(PAPER).tex
+# 	pdftops $(PAPER).pdf
 
-color: $(PAPER).pdf
-	pdflatex $(PAPER).tex
-	pdftops $(PAPER).pdf
-
-$(PAPER).ps: $(PAPER).pdf
-	pdflatex "\newcommand{\wantBW}{} \input{$(PAPER).tex}"
-	pdftops $(PAPER).pdf
+# $(PAPER).ps: $(PAPER).pdf
+# 	pdflatex "\newcommand{\wantBW}{} \input{$(PAPER).tex}"
+# 	pdftops $(PAPER).pdf
 
 %.pdf : %.fig #Makefile
 	fig2dev -L pdf -b 1 $< $@

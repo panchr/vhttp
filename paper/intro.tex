@@ -1,3 +1,42 @@
 \section{Introduction}
 \label{sec:intro}
 
+HTTP is incredibly widespread and at the same time, incredibly insecure. HTTP
+sends data over plaintext and does not provide any mechanism to verify the
+authenticity or integrity of data. As a consequence, the data received over
+plain HTTP cannot be trusted.
+
+With no security guarantees, numerous attacks are possible upon HTTP, including
+Man-in-the-Middle (MITM) attacks. In MITM attacks, a third party intercepts,
+and potentially forges, communication between two parties. With HTTP's
+client-server model, a third-party can intercept requests from the client and
+respond with bogus HTTP responses. Without any added security, the client has
+no way to detect that such an attack is occurring and will accept the bogus
+response as legitimate.
+
+HTTPS alleviates most of these concerns through the use of certificates, which
+render remote MITM attacks nearly impossible to perform. In addition, HTTPS
+operates over TLS (Transport Layer Security) or SSL (Secure Sockets Layer) that
+encrypts data from both the client and server. However, not all servers allow
+or support HTTPS. Even if they do support HTTPS, websites often include
+download links (or more generally, instructions on how to download static
+content) that operate over HTTP. A simple solution to MITM attacks, then, is
+to upgrade servers to HTTPS; however, this is not possible without cooperation
+from the server administrators. A client wishing to validate the authenticity
+and integrity of data from a server over HTTP is out of luck.
+
+vHTTP is concerned with accessing static content over HTTP. Although most
+static content, such as images or text files, are not that harmful if a third
+party presents you with a bogus version, there are specific types of content
+which can be devastating. For example, downloading programs or installation
+scripts over HTTP, and then executing them, can have disastrous consequences
+were a MITM attack to be performed. Unfortunately, the practice of presenting
+HTTP links for this type of content is not uncommon, which presents a ripe
+opportunity for malicious agents to perform MITM attacks.
+
+The prevalence of such HTTP links for static content motivates the vHTTP
+project, which aims to mitigate MITM attacks. This mitigation is accompished on
+the client-side and so, can be performed without changes to the servers hosting
+the content (which are generally not in the client's control).
+
+\cite{empty-citation}

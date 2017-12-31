@@ -46,6 +46,9 @@
 }
 \newcommand{\URL}[1]{\url{#1}}
 
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+
 %%%%% Setup for PDF
 \hypersetup{%
 pdfauthor = {\AUTHORS},
@@ -126,6 +129,9 @@ bookmarksopen = {true}
 
 \begin{document}
 \maketitle
+
+\tikzstyle{block} = [rectangle, draw, fill=blue!20, 
+    text width=3em, text centered, rounded corners, minimum height=2em]
 
 \input{abstract}   
 \input{intro}
