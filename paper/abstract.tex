@@ -1,7 +1,19 @@
-% -*-LaTeX-*-
-% $Id: abstract.tex 70 2007-01-30 21:59:16Z nicolosi $
-
 \begin{abstract}
-ABSTRACT HERE
-\end{abstract}
 
+HTTP is vulnerable to multiple attacks, including Man-in-the-Middle (MITM)
+attacks. MITM attacks can be performed through a variety of attack vectors,
+but they still tend to be localized and not global attacks. Although HTTPS
+largely removes most of these attack vectors, not all websites or servers
+support HTTPS and so users concerned with security were previously out of luck
+if they had to access content from servers that only support HTTP.
+
+In this paper, we introduce vHTTP, an HTTP proxy that provides mitigation
+against MITM attacks for static content. vHTTP uses the concept of vantage
+points to obtain multiple perspectives on what the actual response to a given
+HTTP request should be, and then attempts to find consensus among those
+perspectives. A response, if any, that has consensus among the different
+vantange points is sent back to the user. Through this mechanism, the user can
+gain confidence to the validity of the response even if they are restricted to
+using HTTP.
+
+\end{abstract}

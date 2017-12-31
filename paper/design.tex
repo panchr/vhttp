@@ -9,9 +9,19 @@ to the actual domain. vHTTP performs a MITM mitigation technique on behalf of
 the client, and then responds with the appropriate data if the mitigation
 succeeds.
 
-Because vHTTP is written an HTTP proxy, and not an extension to any specific
+Because vHTTP is written as an HTTP proxy, and not an extension to any specific
 client itself, it can be used by a wide-variety of clients. As long as a client
 supports using HTTP proxies, which most do, vHTTP can be used without hassle.
+Designing vHTTP as a regular proxy has this advantange of client flexibility,
+but it comes at the cost of added overhead. Instead of the MITM mitigation
+happening on the client side, it occurs on this additional vHTTP proxy; this,
+of course, requires the additional step of requests going through vHTTP. In
+addition, vHTTP's mitigation only works if the client's connection to vHTTP
+is secure. As such, vHTTP is designed to be simple enough that users can run
+it on their own hosts; this lets vHTTP act as a local HTTP proxy. Running it
+locally has the added benefit of minimizing some of the network overhead. There
+is more discussion about the efficiency and overhead present in the evaluation,
+along with benchmarks of vHTTP's performance.
 
 \subsection{Vantage Points}
 
@@ -121,4 +131,6 @@ consensus. Through this manner, the total time taken to acquire the proxy
 responses is that of the slowest response, not the combined total.
 
 Similarly, multiple simultaneous requests to vHTTP can be efficiently handled
-because whenever the server is waiting for the vantage points to respond, 
+because whenever the server is waiting for the vantage points to respond, it
+can process another request. These asynchronous features work to minimize
+the overhead of using vHTTP.
