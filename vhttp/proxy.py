@@ -10,6 +10,7 @@ import asyncio
 import logging
 import decimal
 import functools
+import os
 
 import aiohttp
 import aiohttp.web
@@ -25,6 +26,8 @@ async def proxy_request(
     request: aiohttp.web.Request,
     vantage_points: typing.Optional[typing.List[str]] = None,
     threshold: typing.Optional[decimal.Decimal] = None,
+    read_timeout: typing.Optional[int] = 300,
+    conn_timeout: typing.Optional[int] = 60,
     ) -> aiohttp.web.Response:
   '''
   Proxy a request to the destination, potentially through vantage points.
@@ -40,8 +43,8 @@ async def proxy_request(
   '''
   async with aiohttp.ClientSession(
       version=request.version,
-      read_timeout=300,
-      conn_timeout=60,
+      read_timeout=read_timeout,
+      conn_timeout=conn_timeout,
       auto_decompress=True,
       skip_auto_headers=frozenset({'User-Agent'})) as session:
     r = distribute_request(session, request, vantage_points, threshold)

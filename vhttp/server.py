@@ -32,6 +32,10 @@ def get_proxy_server():
   threshold = decimal.Decimal(os.getenv('VHTTP_THRESHOLD', '0.5'))
   # Whether or not to perform the normal request as well.
   perform_normal = int(os.getenv('VHTTP_PERFORM_NORMAL', '1'))
+  # Timeout when reading response from proxy.
+  read_timeout = int(os.getenv('VHTTP_READ_TIMEOUT', '300'))
+  # Timeout when connecting to proxy.
+  conn_timeout = int(os.getenv('VHTTP_CONN_TIMEOUT', '60'))
 
   if len(proxies):
     _log.info("Vantage Points: %s.", ','.join(proxies))
@@ -46,13 +50,18 @@ def get_proxy_server():
   # Serve all requests with the proxy handler
   handler = functools.partial(
     proxy.proxy_request,
-    vantage_points=proxies,
-    threshold=threshold)
+      vantage_points=proxies,
+      threshold=threshold,
+      read_timeout=read_timeout,
+      conn_timeout=conn_timeout)
 
   proxy_server = aiohttp.web.Server(handler)
   loop = asyncio.get_event_loop()
 
   _log.info("Running proxy on: %s:%d." % (proxy_host, proxy_port))
+  _log.info(
+    "Consensus Threshold: {:f}; Read Timeout: {:d}; Conn Timeout: {:d}".format(
+      threshold, read_timeout, conn_timeout))
   return loop.create_server(proxy_server, proxy_host, proxy_port)
 
 if __name__ == '__main__':
