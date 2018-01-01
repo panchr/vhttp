@@ -1,15 +1,27 @@
 \section{Evaluation}
 \label{sec:eval}
 
-We evaluate vHTTP on two primary metrics: effectiveness, deployability, and
+We evaluate vHTTP on three primary metrics: effectiveness, deployability, and
 performance.
 
 % TODO: effectiveness and performance sections
 
 \subsection{Effectiveness}
 
-vHTTP's effectiveness is defined as its ability to mitigate different scales of
-MITM attacks.
+vHTTP's effectiveness is defined as its ability to mitigate different MITM
+attacks. By design, it is able to mitigate localized MITM attacks. That is, it
+can prevent the situation where a single path or a subset of the paths to the
+destination are compromised. In the event where all or a majority of the paths
+are under a MITM attack, such as if through a global-scale DNS-based attack or
+if an attacker gets access to the servers themselves, vHTTP will not help.
+
+With a threshold setting of $T$ and $N$ total vantage points, vHTTP can
+mitigate an attack where $N-T$ vantage points are compromised; consequently,
+it is vital that the user configures a diverse set of vantage points that are
+unlikely to be compromised all together. Against small-scale attacks, vHTTP
+has shown to be effective in tests. A more detailed example of using vHTTP,
+and how it is effective against localized attacks, is included in the project
+repository.
 
 \subsection{Deployability}
 
