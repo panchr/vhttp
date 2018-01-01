@@ -1,41 +1,54 @@
 \begin{figure*}
   \centering
   \begin{adjustbox}{width=\textwidth}
-  \begin{tikzpicture}[node distance = 2cm, auto]
+  \begin{tikzpicture}[auto]
     \tikzset{every node}=[font=\tiny\sffamily]
 
     \node [block] at (0, 0) (client) {Client};
     \node [block] at (2, 0) (vhttp) {vHTTP};
-    \node [block] at (4, 4) (vp-A) {Vantage Point A};
-    \node [block] at (4, 2) (vp-B) {Vantage Point B};
+    \node [block] at (4, 2) (vp-A) {Vantage Point A};
+    \node [block] at (4, 1) (vp-B) {Vantage Point B};
     \node [block] at (4, 0) (vp-C) {Vantage Point C};
-    \node [block] at (4, -2) (vp-D) {Vantage Point D};
-    \node [block] at (4, -4) (vp-E) {Vantage Point E};
+    \node [block] at (4, -1) (vp-D) {Vantage Point D};
+    \node [block] at (4, -2) (vp-E) {Vantage Point E};
     \node [block] at (6, 0) (vhttp-rec) {vHTTP};
     \node [block] at (8, 0) (client-rec) {Client};
 
-    % Step 1: client->vhttp
-    \draw (client) -> (vhttp) node [midway, fill=white, anchor=center, sloped] {Request};
-
-    % Step 2: vhttp->proxies
-    \draw (vhttp) -> (vp-A) node [midway, fill=white, anchor=center, sloped] {Proxy Request};
-    \draw (vhttp) -> (vp-B) node [midway, fill=white, anchor=center, sloped] {Proxy Request};
-    \draw (vhttp) -> (vp-C) node [midway, fill=white, anchor=center, sloped] {Proxy Request};
-    \draw (vhttp) -> (vp-D) node [midway, fill=white, anchor=center, sloped] {Proxy Request};
-    \draw (vhttp) -> (vp-E) node [midway, fill=white, anchor=center, sloped] {Proxy Request};
-
-    % Step 3: proxies->vhttp
-    \draw (vp-A) -> (vhttp-rec) node [midway, fill=white, anchor=center, sloped] {Proxy Response};
-    \draw (vp-B) -> (vhttp-rec) node [midway, fill=white, anchor=center, sloped] {Proxy Response};
-    \draw (vp-C) -> (vhttp-rec) node [midway, fill=white, anchor=center, sloped] {Proxy Response};
-    \draw (vp-D) -> (vhttp-rec) node [midway, fill=white, anchor=center, sloped] {Proxy Response};
-    \draw (vp-E) -> (vhttp-rec) node [midway, fill=white, anchor=center, sloped] {Proxy Response};
-
-    % Step 4: vhttp->client
-     \draw (vhttp-rec) -> (client-rec) node [midway, fill=white, anchor=center, sloped] {Response};
+    \path[->, every
+        node/.style={font=\sffamily\tiny,midway,anchor=center,fill=white}]
+      (client) edge node {$R$} (vhttp)
+      (vhttp) edge node {$R'$} (vp-A)
+              edge node {$R'$} (vp-B)
+              edge[dashed] node {$R'$} (vp-C)
+              edge node {$R'$} (vp-D)
+              edge node {$R'$} (vp-E)
+      (vp-A) edge[ForestGreen] node {$S_A$} (vhttp-rec)
+      (vp-B) edge[ForestGreen] node {$S_B$} (vhttp-rec)
+      % (vp-C) edge[dashed] node {$S_C$} (vhttp-rec)
+      (vp-D) edge[red] node {$S_D$} (vhttp-rec)
+      (vp-E) edge[ForestGreen] node {$S_E$} (vhttp-rec)
+      (vhttp-rec) edge[ForestGreen] node {$S_E$} (client-rec);
 
   \end{tikzpicture}
   \end{adjustbox}
-  \caption{Flow of data when vHTTP achieves consensus.}
+  % TODO: expand caption
+  \caption{
+    \emph{Flow of data when vHTTP achieves consensus.}
+    In this example, the client proxies a request $R$ through vHTTP. vHTTP
+    sends $R$, with some minor modifications\protect\footnotemark,
+    along to the five vantage points configured. Vantage points $A$, $B$, and
+    $C$ respond. Assuming a default threshold of $0.5$, they achieve
+    consensus, so one of those responses (in this case, we arbitrarily chose
+    $S_E$) is sent back to the user. $D$ is either a malicious proxy or a MITM
+    attack is being performed on this path, so its response is discarded as
+    against the largest consensus, and $C$ never responds because it is
+    unavailable.
+    }
   \label{fig:vhttp-consensus-flow}
 \end{figure*}
+
+\footnotetext{
+  The primary modification is to ensure that the
+  request has the \texttt{Connection} header set to \texttt{close} so that
+  the connection does not remain open
+  }

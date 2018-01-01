@@ -38,7 +38,7 @@
 \usepackage[scaled=0.92]{helvet}
 \usepackage{amsmath}
 
-\usepackage{color}
+\usepackage[usenames, dvipsnames]{xcolor}
 \usepackage[pdftex]{graphicx}
 \ifthenelse{\isundefined{\wantBW}}{%
   \usepackage[colorlinks]{hyperref}%        % for online version
@@ -132,7 +132,7 @@ bookmarksopen = {true}
 \begin{document}
 \maketitle
 
-\tikzstyle{block} = [rectangle, draw, fill=blue!20, text centered, rounded corners, minimum height=2em]
+\tikzstyle{block} = [rectangle, draw, fill=white, text centered, rounded corners, minimum height=2em]
 
 \input{abstract}   
 \input{intro}

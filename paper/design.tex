@@ -55,7 +55,11 @@ by using existing HTTP proxies. The user provides a list of proxies to use and
 vHTTP performs the user's request through all of the provided proxies, as shown
 in Figure \ref{fig:proxy-data-flow}. There are many free HTTP proxies around
 the world, and so finding such a list is not difficult
-\cite{HideMyName-Proxies, NordVPN-Proxies, FreeProxyList}.
+\cite{HideMyName-Proxies, NordVPN-Proxies, FreeProxyList}. In addition to using
+these proxies, vHTTP also uses an additional vantage point: the original
+intended server.\footnote{Like many of vHTTP's features, this can be disabled;
+vHTTP is highly configurable to the user's needs.} This is done to provide an
+additional perspective.
 
 We refer to vantage points and HTTP proxies interchangeably in this paper, as
 they are synonymous for our purposes. Although we desire that vantage points
@@ -84,7 +88,7 @@ agreement. We call the subset $C$ that has successful consensus a
 $T$ depending on how strict of a guarantee they want on the response.
 Practically, the threshold is inputted as a fraction of $N$; setting it to 0
 provides no added security and setting it to 1 requires all vantage points to
-agree. 
+agree. For an example of consensus, see Figure \ref{fig:vhttp-consensus-flow}.
 
 We choose the hash function $H$ based on this one key property: $H(R)$ for a
 response $R$ should be representative of the \emph{content} in $R$. Because
