@@ -31,7 +31,6 @@
 
   \end{tikzpicture}
   \end{adjustbox}
-  % TODO: expand caption
   \caption{
     \emph{Flow of data when vHTTP achieves consensus.}
     In this example, the client proxies a request $R$ through vHTTP. vHTTP
@@ -42,7 +41,8 @@
     $S_E$) is sent back to the user. $D$ is either a malicious proxy or a MITM
     attack is being performed on this path, so its response is discarded as
     against the largest consensus, and $C$ never responds because it is
-    unavailable.
+    unavailable. Note that there is only one vHTTP instance and one client;
+    they are separated (on the receiving end) to declutter the diagram.
     }
   \label{fig:vhttp-consensus-flow}
 \end{figure*}
