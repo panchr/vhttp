@@ -25,13 +25,14 @@ Another similar system is DoubleCheck, which performs the same task as
 Perspectives – validating public keys or self-signed certificates when
 connecting to servers over SSH or HTTPS \cite{DoubleCheck}. However, it does
 so using Tor, the distributed and anonymous routing protocol and network. This
-is more robust than Perspectives because it utilizes existing infrastructure
-and more importantly, relies on an established protocol. However, DoubleCheck
-relies on a single Tor exit node as a vantage point. vHTTP has the advantage of
-running the request across multiple vantage points concurrently by default.
+is easier to get started with than Perspectives because it utilizes existing
+infrastructure and more importantly, relies on an established protocol.
+However, DoubleCheck relies on a single Tor exit node as a vantage point.
+vHTTP has the advantage of running the request across multiple vantage points
+concurrently by default.
 
 We note that neither Perspectives nor DoubleCheck is oriented towards HTTP. In
 addition, they face the same problem that vHTTP does: if all of the vantage
 points are compromised \emph{or} if the destination server is compromised, the
 vantage points cannot help in verifying the authenticity and integrity of the
-content it hand.
+content at hand.
