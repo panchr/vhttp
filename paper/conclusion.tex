@@ -1,3 +1,23 @@
 \section{Conclusions}
 \label{sec:conclusion}
 
+% TODO: actual conclusion
+
+\subsection{Future Work}
+
+Although vHTTP is functional currently, there are numerous avenues with which
+to take the project. First, different hash functions can be explored to provide
+either different levels of security or to provide flexibility in what component
+of each response is desired to be verified across vantage points. In addition,
+it may also be useful to support configuration as to which response is chosen
+out of a consensus set. Currently, vHTTP arbitrarily picks a response out of a
+consensus set. Although this works under the assumption that the responses are
+essentially equivalent except for minor details (such as the \texttt{Date}
+header, which can be slightly off due to response timing), different metrics
+can be considered.
+
+Two final pieces of future work concern vantage points. It may be worth
+considering using Tor exit nodes, similar to DoubleCheck, as vantage points.
+This allows for easier discovery and configuration, as well being more secure
+than using HTTP proxies. Alternatively, adding automatic discovery of vantage
+points would also be beneficial so that vHTTP can be even easier to use.

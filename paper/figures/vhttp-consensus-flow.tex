@@ -33,15 +33,14 @@
   \caption{
     \emph{Flow of data when vHTTP achieves consensus.}
     In this example, the client proxies a request $R$ through vHTTP. vHTTP
-    sends $R$, with some minor modifications\protect\footnotemark,
-    along to the five vantage points configured. Vantage points $A$, $B$, and
-    $C$ respond. Assuming a default threshold of $0.5$, they achieve
-    consensus, so one of those responses (in this case, we arbitrarily chose
-    $S_E$) is sent back to the user. $D$ is either a malicious proxy or a MITM
-    attack is being performed on this path, so its response is discarded as
-    against the largest consensus, and $C$ never responds because it is
-    unavailable. Note that there is only one vHTTP instance and one client;
-    they are separated (on the receiving end) to declutter the diagram.
+    sends a slightly modified $R$\protect\footnotemark to the five vantage
+    points configured. Vantage points $A$, $B$, and $C$ respond. Assuming a
+    default threshold of $0.5$, they achieve consensus, so one of those
+    responses (in this case, we arbitrarily chose $S_E$) is sent back to the
+    user. $D$ is either a malicious proxy or a MITM attack is being performed
+    on this path, so its response is discarded as against the largest
+    consensus, and $C$ never responds because it is unavailable. Note that
+    there is only one vHTTP instance and one client.
     }
   \label{fig:vhttp-consensus-flow}
 \end{figure*}
@@ -49,5 +48,5 @@
 \footnotetext{
   The primary modification is to ensure that the
   request has the \texttt{Connection} header set to \texttt{close} so that
-  the connection does not remain open
+  the connection does not remain open.
   }
