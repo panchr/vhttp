@@ -10,6 +10,7 @@ import hashlib
 import collections
 import logging
 import os
+import random
 
 import aiohttp.web
 
@@ -55,8 +56,12 @@ def check_consensus(
   max_frequency = 0
   possible_resp = None
 
+  # Separator used must be random and unpredictable by a malicious agent.
+  # However, the same separator must be used across all of the requests.
+  separator = '{:f}'.format(random.random()).encode('utf8')
+
   for r in responses:
-    resp_hash = hash_response(r)
+    resp_hash = hash_response(r, separator)
     frequencies[resp_hash] += 1
 
     if frequencies[resp_hash] >= max_frequency:
@@ -70,7 +75,7 @@ def check_consensus(
 
   return None
 
-def hash_response(r: aiohttp.web.Response) -> str:
+def hash_response(r: aiohttp.web.Response, sep: bytes) -> str:
   '''
   Hash the response into a single string. Currently, the components used are
   the status code and the body.
@@ -84,11 +89,17 @@ def hash_response(r: aiohttp.web.Response) -> str:
 
   resp_hash = hashlib.sha256()
   resp_hash.update('{:03d}'.format(r.status).encode('utf8'))
-  resp_hash.update(r.body)
 
-  for header, value in r.headers.items():
-    if header in HASHED_HEADERS:
+  for header in HASHED_HEADERS:
+    if header in r.headers:
       resp_hash.update(header.encode('utf8'))
-      resp_hash.update(value.encode('utf8'))
+      resp_hash.update(r.headers[header].encode('utf8'))
+
+  # Adding a mandatory separator prevents the body from "mimicking" headers
+  # that are not actually present. Otherwise, a malicious agent could create a
+  # body that looks like headers (i.e. a body of "Content-Length: 100\n"),
+  # which would result in the same hash as if those headers were used instead.
+  resp_hash.update(sep)
+  resp_hash.update(r.body)
 
   return resp_hash.hexdigest()
