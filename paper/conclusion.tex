@@ -1,7 +1,17 @@
 \section{Conclusions}
 \label{sec:conclusion}
 
-% TODO: actual conclusion
+In this paper, we introduced vHTTP, a locally-run HTTP proxy that provides
+mitigation against localized Man-in-the-Middle attacks. It does so through the
+concept of vantage points, which are nodes, ideally geographically-diverse,
+that provide perspectives onto the actual content of a response. Our proxy
+uses normal HTTP proxies, of which there are many publicly available, as
+vantage points because of their ease of use and access. vHTTP does not require
+any additional infrastructure or modifications to server-side software and
+instead, works solely on clients. Thus, it easily be used by security-conscious
+users who are concerned about the validity of an HTTP response. We believe it
+provides an adequate technique to avoid local MITM attacks when HTTPS is not
+available.
 
 \subsection{Future Work}
 
