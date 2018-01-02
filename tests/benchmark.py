@@ -21,10 +21,10 @@ def main() -> int:
   with_proxy = run_benchmark(number, urls, proxy_addr)
   no_proxy = run_benchmark(number, urls)
 
+  print('url,proxy,normal')
   for url in urls:
-    print("url: %s" % url)
     for n in range(number):
-      print(with_proxy[url][n], no_proxy[url][n])
+      print(url, ',', with_proxy[url][n], ',', no_proxy[url][n])
 
   return 0
 
