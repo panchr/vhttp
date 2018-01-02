@@ -23,7 +23,7 @@ def main() -> int:
   aggregate = {}
 
   print('concurrency,50%,70%,75%')
-  for i in range(con_start, con_end, con_step):
+  for i in range(con_start, con_end+1, con_step):
     output_file = os.path.join(output_folder, '%d.csv' % i)
     num_requests = i*10
     if num_requests < 100:
@@ -33,7 +33,7 @@ def main() -> int:
       '-e', output_file,
       '-n', str(num_requests),
       '-c', str(i),
-      '-X', proxy_addr,
+      '-X', proxy_addr, # disable the -X option to benchmark the major server
       url
     ]
     result = subprocess.check_output(cmd)
