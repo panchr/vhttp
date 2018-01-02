@@ -22,7 +22,7 @@ def main() -> int:
 
   aggregate = {}
 
-  print('concurrency,50%,70%,75%')
+  print('concurrency,50th,70th,75th')
   for i in range(con_start, con_end+1, con_step):
     output_file = os.path.join(output_folder, '%d.csv' % i)
     num_requests = i*10

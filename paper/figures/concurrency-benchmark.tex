@@ -1,0 +1,28 @@
+\begin{figure}
+  \begin{tikzpicture}
+    \begin{axis}[
+      title={vHTTP Scalability},
+      ylabel={Time (ms)},
+      xlabel={Concurrent Requests},
+      ymin=0, ymax=1500,
+      legend pos=north west,
+      ymajorgrids=true,
+      grid style=dashed]
+    \addplot+[mark size = 1pt, ForestGreen, mark options=ForestGreen]
+      table[x=concurrency, y=75th, col sep=comma]
+      {data/aggregate-proxy.csv};
+    \addlegendentry{vHTTP}
+
+    \addplot+[mark size = 1pt, blue, mark options=blue]
+      table[x=concurrency, y=75th, col sep=comma]
+      {data/aggregate-no-proxy.csv};
+    \addlegendentry{Normal}
+    \end{axis}
+  \end{tikzpicture}
+
+  \caption{
+    Performance as number of concurrent requests increases. vHTTP was
+    configured with 3 vantage points.
+    }
+  \label{figs:concurrency-benchmark}
+\end{figure}

@@ -4,8 +4,6 @@
 We evaluate vHTTP on three primary metrics: effectiveness, deployability, and
 performance.
 
-% TODO: effectiveness and performance sections
-
 \subsection{Effectiveness}
 
 vHTTP's effectiveness is defined as its ability to mitigate different MITM
@@ -37,4 +35,36 @@ integrity of response contents.
 
 \subsection{Performance}
 
+Before looking at the performance of vHTTP, we note that it is not meant to be
+incredibly performant, as it is not a general-purpose proxy. For one, it is
+only oriented towards retrieving static content, over HTTP, such that multiple
+requests \emph{should} have the same response. More importantly, we expect that
+most of a security-conscious user's traffic is using secure protocols like
+HTTPS, not HTTP. vHTTP is built to be used as a last resort when accessing
+static content that cannot be accessed over HTTPS, which we hope is an
+ever-decreasing amount of content. With that in mind, we briefly go into the
+performance of vHTTP.
+
+Because it is another proxy, vHTTP incurs some overhead just from the
+additional hop; instead of simply sending a request to an endpoint, the user's
+client sends a request to vHTTP, which will then send more requests out.
+Figure \ref{figs:general-benchmark} shows the incurred overhead. Compared to
+sending requests without a proxy, vHTTP has slightly greater fluctuation. This
+is likely due to the fact that because vHTTP has more requests (to multiple
+vantage points), there is more network variance.
+
+vHTTP also does not scale too well with concurrent requests. Particularly,
+after 30 concurrent requests, the time taken per request increases more so
+than before, as seen in Figure \ref{fig:concurrency-benchmark}. We believe this
+is due to the single-threaded nature of the proxy; even with asynchronous
+handling, requests will be queued while others are being processed. That being
+said, we do not think this or the incurred overhead is a major problem for
+vHTTP. As mentioned before, the proxy is not designed to be extremely
+performant; it is designed for use in specific use cases which we imagine have
+a limited number of concurrent requests and can easily tolerate a small
+overhead. Consequently, we did not pursue improving the performance too heavily
+as this was not a major concern; vHTTP performs well enough to be usable for
+its intended purposes.
+
 \input{figures/general-benchmark}
+\input{figures/concurrency-benchmark}
