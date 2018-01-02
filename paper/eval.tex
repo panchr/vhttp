@@ -51,7 +51,10 @@ client sends a request to vHTTP, which will then send more requests out.
 Figure \ref{figs:general-benchmark} shows the incurred overhead. Compared to
 sending requests without a proxy, vHTTP has slightly greater fluctuation. This
 is likely due to the fact that because vHTTP has more requests (to multiple
-vantage points), there is more network variance.
+vantage points), there is more network variance. However, this overhead is not
+proportional to the initial request time; instead, it is simply a relatively
+constant amount of overhead to vHTTP plus additional delays that each vantage
+point may face.
 
 vHTTP also does not scale too well with concurrent requests. Particularly,
 after 30 concurrent requests, the time taken per request increases more so
