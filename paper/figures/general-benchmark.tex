@@ -1,0 +1,27 @@
+\begin{figure}
+  \begin{tikzpicture}
+    \begin{axis}[
+      title={vHTTP Request Timing},
+      ylabel={Time (ms)},
+      xlabel={Request Number},
+      ymin=0, ymax=200,
+      legend pos=north west,
+      ymajorgrids=true,
+      grid style=dashed]
+    \addplot+[only marks, mark size = 1pt, mark options=ForestGreen]
+      table[x=run, y=proxy, col sep=comma]
+      {data/general.csv};
+    \addlegendentry{vHTTP}
+
+    \addplot+[only marks, mark size = 1pt, mark options=blue]
+      table[x=run, y=no-proxy, col sep=comma]
+      {data/general.csv};
+    \addlegendentry{normal}
+    \end{axis}
+  \end{tikzpicture}
+
+  \caption{
+    General performance data of requests to various websites. vHTTP was
+    configured with 4 vantage points.
+    }
+\end{figure}

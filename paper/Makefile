@@ -14,10 +14,11 @@ SOURCES:=vhttp.tex \
 	references.bib
 
 FIGURES:=$(wildcard figures/*.pdf figures/*.png figures/*.tex)
+DATA:=$(wildcard data/*)
 
 all: $(PAPER).pdf
 
-$(PAPER).pdf: $(SOURCES) $(FIGURES)
+$(PAPER).pdf: $(SOURCES) $(FIGURES) $(DATA)
 	pdflatex $(PAPER)
 	bibtex $(PAPER)
 	pdflatex $(PAPER)
