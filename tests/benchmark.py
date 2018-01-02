@@ -24,7 +24,7 @@ def main() -> int:
   print('url,proxy,normal')
   for url in urls:
     for n in range(number):
-      print(url, ',', with_proxy[url][n], ',', no_proxy[url][n])
+      print('%s,%f,%f' % (url, with_proxy[url][n], no_proxy[url][n]))
 
   return 0
 

@@ -43,7 +43,9 @@ def main() -> int:
       ms_50th = data[51].split(',')[1].strip()
       ms_70th = data[71].split(',')[1].strip()
       ms_75th = data[76].split(',')[1].strip()
-      print(','.join([str(i), ms_50th, ms_70th, ms_75th]))
+      print('%d,%s,%s,%s' % (i, ms_50th, ms_70th, ms_75th))
+
+    os.remove(output_file)
 
 if __name__ == '__main__':
   sys.exit(main())
