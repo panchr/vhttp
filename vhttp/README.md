@@ -35,6 +35,16 @@ Run vHTTP:
 λ python vhttp/server.py
 ```
 
+### Docker
+
+vHTTP can also be run with Docker:
+
+```bash
+λ cd vhttp
+λ docker build . -t vhttp:latest
+λ docker run --rm -p 7777:7777 vhttp:latest
+```
+
 ## Example
 
 We use the following HTTP proxies, which were available at the time of writing:
@@ -63,6 +73,12 @@ First, with just the malicious proxy:
 λ VHTTP_PROXIES=http://localhost:8081 python vhttp/server.py
 ```
 
+With Docker, use
+
+```bash
+λ docker run --rm -p 7777:7777 -e VHTTP_PROXIES=http://localhost:8081 vhttp:latest
+```
+
 and make the actual request:
 
 ```bash
@@ -85,7 +101,13 @@ add on the additional proxies:
 λ python vhttp/server.py
 ```
 
-and again, the actual request:
+With Docker, use
+
+```bash
+λ docker run --rm -p 7777:7777 -e VHTTP_PROXIES=http://localhost:8081,http://128.68.150.9:53281,http://217.61.15.26:3128,http://173.255.197.30:3128,http://88.99.151.121:3128 vhttp:latest
+```
+
+And again, the actual request:
 
 ```bash
 λ http_proxy=http://localhost:7777 curl http://deis.io/deisctl/install.sh
