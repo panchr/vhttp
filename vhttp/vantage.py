@@ -69,22 +69,25 @@ def check_consensus(
       possible_resp = r
 
   max_agreement = max_frequency / total_responses
-  if max_agreement >= threshold:
+  if max_agreement >= threshold and not isinstance(possible_resp, Exception):
     _log.info('Consensus Achieved (%f).' % max_agreement)
     return possible_resp
 
   return None
 
-def hash_response(r: aiohttp.web.Response, sep: bytes) -> str:
+def hash_response(
+    r: typing.Union[aiohttp.web.Response, Exception],
+    sep: bytes
+    ) -> str:
   '''
   Hash the response into a single string. Currently, the components used are
-  the status code and the body.
+  the status code, headers, and the body.
 
   :param r: response to hash
 
   :return: hash of response
   '''
-  if not isinstance(r, aiohttp.web.Response):
+  if isinstance(r, Exception):
     return None
 
   resp_hash = hashlib.sha256()

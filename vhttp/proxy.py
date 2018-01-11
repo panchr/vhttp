@@ -86,9 +86,7 @@ async def distribute_request(
   ], return_exceptions=True)
 
   # Count failed responses.
-  num_failed = len(list(filter(
-    lambda r: not isinstance(r, aiohttp.web.Response),
-    responses)))
+  num_failed = len(list(filter(lambda r: isinstance(r, Exception), responses)))
 
   if num_failed > 0:
     _log.warning("%d proxies failed for %s." % (num_failed, request.url))
