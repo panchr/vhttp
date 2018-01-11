@@ -8,17 +8,17 @@ that provide perspectives onto the actual content of a response. Our proxy
 uses normal HTTP proxies, of which there are many publicly available, as
 vantage points because of their ease of use and access. vHTTP does not require
 any additional infrastructure or modifications to server-side software and
-instead, works solely on clients. Thus, it easily be used by security-conscious
-users who are concerned about the validity of an HTTP response. We believe it
-provides an adequate technique to avoid local MITM attacks when HTTPS is not
-available.
+instead, works solely on clients. Thus, it can easily be used by
+security-conscious users who are concerned about the validity of an HTTP
+response. We believe it provides an adequate technique to avoid local MITM
+attacks when HTTPS is not available.
 
 \subsection{Future Work}
 
 Although vHTTP is functional currently, there are numerous avenues with which
 to take the project. First, different hash functions can be explored to provide
-either different levels of security or to provide flexibility in what component
-of each response is desired to be verified across vantage points. In addition,
+either different levels of security or flexibility in what component of each
+response is desired to be verified across vantage points. In addition,
 it may also be useful to support configuration as to which response is chosen
 out of a consensus set. Currently, vHTTP arbitrarily picks a response out of a
 consensus set. Although this works under the assumption that the responses are

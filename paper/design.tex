@@ -2,26 +2,24 @@
 \label{sec:design}
 
 vHTTP is implemented as an HTTP proxy that can be run locally by security-aware
-people. Users can configure their clients (such as \texttt{curl},
-\texttt{wget}, or even Python's \texttt{requests}) to use vHTTP as a HTTP
+users. Users can configure their clients (such as \texttt{curl},
+\texttt{wget}, or even Python's \texttt{requests}) to use vHTTP as an HTTP
 proxy. All HTTP requests from this client are then sent to vHTTP instead of
-to the actual domain. vHTTP performs a MITM mitigation technique on behalf of
-the client, and then responds with the appropriate data if the mitigation
-succeeds.
+to the actual destination. vHTTP performs a MITM mitigation technique on
+behalf of the client, and then responds with the appropriate data if the
+mitigation succeeds.
 
 Because vHTTP is written as an HTTP proxy, and not an extension to any specific
 client itself, it can be used by a wide-variety of clients. As long as a client
 supports using HTTP proxies, which most do, vHTTP can be used without hassle.
 Designing vHTTP as a regular proxy has this advantange of client flexibility,
 but it comes at the cost of added overhead. Instead of the MITM mitigation
-happening on the client side, it occurs on this additional vHTTP proxy; this,
+happening on the client side, it occurs on an additional proxy; this,
 of course, requires the additional step of requests going through vHTTP. In
 addition, vHTTP's mitigation only works if the client's connection to vHTTP
 is secure. As such, vHTTP is designed to be simple enough that users can run
 it on their own hosts; this lets vHTTP act as a local HTTP proxy. Running it
-locally has the added benefit of minimizing some of the network overhead. There
-is more discussion about the efficiency and overhead present in the evaluation,
-along with benchmarks of vHTTP's performance.
+locally has the added benefit of minimizing some of the network overhead.
 
 \subsection{Vantage Points}
 
@@ -32,19 +30,19 @@ vantage points are geographically-diverse, or located around the world, then
 performing a MITM on such content is a much more difficult task, as each
 individual vantage point must be compromised. The concept of vantage points
 is utilized in various applications already; it was proposed as a method to
-avoid blindly trusting the public key on first use in SSH \cite{Perspectives}
-or to prevent attacks on DNS \cite{Hotpets17, ConfiDNS}.
+avoid blindly trusting a server's public key on first use in SSH
+\cite{Perspectives} or to prevent attacks on DNS \cite{Hotpets17, ConfiDNS}.
 
 The entire idea behind vHTTP is to utilize the general property that MITM
 attacks tend to be localized \cite{MITM-Survey}. A malicious agent can use DNS
-cache poisoning, BGP AS-path poisoning \cite{Hotpets17}, or act as a middle
-box on a specific route or subset of routes to a destination. However, unless
-performing a massive-scale attack, it is infeasible and unlikely that an agent
-can attack all of the routes to a destination. Agents who could feasibly
-perform a MITM attack on every route to a destination are likely targeting
-important content - at which point the user should not be accessing such
-content over HTTP, anyway. vHTTP is not designed to mitigate large-scale
-attacks but instead, work around localized ones.
+cache poisoning, BGP AS-path poisoning \cite{Hotpets17}, or act as a
+middle-box on a specific route or subset of routes to a destination. However,
+unless performing a massive-scale attack, it is infeasible and unlikely that
+an agent can attack all of the routes to a destination. Agents who could
+feasibly perform a MITM attack on every route to a destination are likely
+targeting important content - at which point the server should not be
+presenting such content over HTTP, anyway. vHTTP is not designed to mitigate
+large-scale attacks but instead, work around localized ones.
 
 vHTTP is designed to be used with minimal overhead by the user. The user should
 be able to start vHTTP, configure their client to use vHTTP as an HTTP proxy,
@@ -57,9 +55,10 @@ in Figure \ref{fig:proxy-data-flow}. There are many free HTTP proxies around
 the world, and so finding such a list is not difficult
 \cite{HideMyName-Proxies, NordVPN-Proxies, FreeProxyList}. In addition to using
 these proxies, vHTTP also uses an additional vantage point: the original
-intended server.\footnote{Like many of vHTTP's features, this can be disabled;
-vHTTP is highly configurable to the user's needs.} This is done to provide an
-additional perspective.
+intended server.\footnote{
+  Like many of vHTTP's features, this can be disabled; vHTTP is highly
+  configurable to the user's needs.}
+This is done to provide an additional perspective.
 
 We refer to vantage points and HTTP proxies interchangeably in this paper, as
 they are synonymous for our purposes. Although we desire that vantage points
@@ -97,16 +96,16 @@ basis for consensus should take the content of each response into account.
 $H$ is thus defined as
 
 \begin{align*}
-  H(R) = sha256(R.status + R.body + R.headers)
+  H(R) = SHA256(R.status + R.headers + R.body)
 \end{align*}
 
 where $+$ is the concatenation operator. $R.status$ is the HTTP status code of
-$R$, $R.body$ is the body of $R$, and $R.headers$ is a string representation
-of certain HTTP headers and their values. The headers used by default are
+$R$, $R.headers$ is a string representation of certain HTTP headers and their
+values, and $R.body$ is the body of $R$. The headers used by default are
 \texttt{Content-Type}, \texttt{Content-Language}, and \texttt{ETag}. These
 headers are included in $H(R)$ because they are directly related to the
 content. In addition, the \texttt{Host} header is included because it is
-unlikely to vary across requests. This is all run through the standard $sha256$
+unlikely to vary across requests. This is all run through the standard $SHA256$
 hash function so that $H$ maintains common properties of good hash functions
 (different values have different hashes, equivalent values have the same hash,
 collision probability is low, and so forth). If $R$ is a response that failed
