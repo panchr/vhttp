@@ -60,8 +60,11 @@ vHTTP also does not scale too well with concurrent requests. Particularly,
 after 30 concurrent requests, the time taken per request increases more so
 than before, as seen in Figure \ref{figs:concurrency-benchmark}. We believe
 this is due to the single-threaded nature of the proxy; even with asynchronous
-handling, requests will be queued while others are being processed. That being
-said, we do not think this or the incurred overhead is a major problem for
+handling, requests will be queued while others are being processed. Note that
+more thorough performance data would have to be collected to get an accurate
+comparison of vHTTP's performance versus normal performance. The metrics
+collected so far are generally rough. That being said, we do not think the
+performance under load or the incurred overhead is a major problem for
 vHTTP. As mentioned before, the proxy is not designed to be extremely
 performant; it is designed for use in specific use cases which we imagine have
 a limited number of concurrent requests and can easily tolerate a small
